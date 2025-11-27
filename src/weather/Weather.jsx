@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
+import { FiLoader } from "react-icons/fi";
 
 function Weather() {
   const [weatherData, setWeatherData] = useState();
   const [searchQuery, setSearchQuery] = useState("");
   const [area, setArea] = useState("Mumbai");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     console.log(weatherData);
@@ -12,13 +14,22 @@ function Weather() {
 
   useEffect(() => {
     const fetchWeatherByCity = async () => {
-      const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${area}&appid=${
-          import.meta.env.VITE_API_KEY
-        }`
-      );
-      const data = await res.json();
-      setWeatherData(data);
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${area}&appid=${
+            import.meta.env.VITE_API_KEY
+          }&units=metric`
+        );
+        const data = await res.json();
+        setWeatherData(data);
+        setLoading(false);
+      } catch (err) {
+        console.log(err);
+        setWeatherData({ cod: 404 });
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchWeatherByCity();
@@ -52,14 +63,45 @@ function Weather() {
           className="w-full pl-3 pr-3 py-2 border border-gray-400 rounded-full focus:outline-none focus:border-blue-500"
         />
       </div>
-      {weatherData && Number(weatherData.cod) === 404 ? (
+      {loading ? (
+        <div className="flex justify-center items-center w-1/2 mx-auto mt-10 text-blue-600 animate-spin">
+          <FiLoader size={30} />
+        </div>
+      ) : weatherData && Number(weatherData.cod) === 404 ? (
         <div className="flex justify-center items-center w-1/2 mx-auto mt-10 text-red-500">
           ✖️ City Not Found, Find another city...
         </div>
       ) : (
-        <div className="border flex justify-center items-center w-1/2 mx-auto mt-10 rounded-xl bg-blue-300 hover:bg-blue-400">
-          {weatherData && weatherData.name}
-        </div>
+        weatherData && (
+          <>
+            <div className="border  w-1/2 mx-auto mt-10 rounded-xl bg-blue-300 hover:bg-blue-400 p-3 ring-2 ring-offset-4">
+              <div className="flex justify-between items-center">
+                <p className="font-bold italic">{weatherData.name} </p>
+                <p>
+                  <span className="text-blue-700 text-xs">
+                    {weatherData.coord.lat}°N
+                  </span>{" "}
+                  <span className="text-emerald-950 text-xs">
+                    {weatherData.coord.lon}°E
+                  </span>
+                </p>
+              </div>
+              <div className="mt-5 bg-blue-300">
+                {weatherData.weather.map((currWeather) => {
+                  return (
+                    // https://openweathermap.org/img/wn/50n@2x.png  currWeather.icon
+                    <div className=" w-full overflow-hidden">
+                      <div className="bg-amber-200 w-full">
+                        {currWeather.main}
+                      </div>
+                      <div>{currWeather.description}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )
       )}
     </>
   );
