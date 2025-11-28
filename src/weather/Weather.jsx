@@ -90,15 +90,29 @@ function Weather() {
                 {weatherData.weather.map((currWeather) => {
                   return (
                     // https://openweathermap.org/img/wn/50n@2x.png  currWeather.icon
-                    <div className=" w-full overflow-hidden">
-                      <div className="bg-amber-200 w-full">
-                        {currWeather.main}
+                    <div
+                      key={currWeather.id}
+                      className="w-full overflow-hidden"
+                    >
+                      <div className="w-full flex">
+                        <span>{currWeather.main}</span>
+                        <span>
+                          {currWeather.icon}
+                          <img
+                            className="w-10 bg-white"
+                            src={`https://openweathermap.org/img/wn/${currWeather.icon}@2x.png`}
+                            alt={currWeather.icon}
+                          />
+                        </span>
                       </div>
                       <div>{currWeather.description}</div>
                     </div>
                   );
                 })}
               </div>
+              <div>{weatherData.main.feels_like}°</div>
+              <div>{weatherData.main.humidity}°</div>
+              <div>{weatherData.main.temp}°</div>
             </div>
           </>
         )
